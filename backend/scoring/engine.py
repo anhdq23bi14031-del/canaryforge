@@ -129,7 +129,7 @@ def score_trigger(
         breakdown["has_referer"] = 5
         total += 5
 
-  # --- Time-of-day (off-hours = higher risk) ---
+# --- Time-of-day (off-hours = higher risk) ---
     from datetime import datetime, timezone
     from zoneinfo import ZoneInfo
 
