@@ -1,12 +1,11 @@
 """
 Excel Canary Token — creates an .xlsx file with convincing LLM-generated
-tabular decoy data and an embedded tracking mechanism.
+tabular decoy data and a clickable tracking link as the primary trigger.
 
 Caveat (same as PDF): Excel does not reliably auto-fetch remote content on
 open across all versions/platforms (and many orgs block external content
-by default for security). A visible "source" hyperlink cell is included as
-the primary, reliable trigger mechanism — clicking it (or automated link-
-following tools scanning the file) fires the canary.
+by default for security). A visible hyperlink cell — styled with cover
+text matching the sheet's content type — is the primary, reliable trigger.
 """
 import io
 import secrets
@@ -25,7 +24,7 @@ async def generate_excel_token(
 ) -> dict:
     """
     Generate a canary Excel spreadsheet with convincing LLM-written tabular content.
-    Primary trigger: a hyperlink cell in the sheet.
+    Primary trigger: a hyperlink cell in the sheet, styled per content type.
     """
     slug = secrets.token_urlsafe(16)
     click_url = f"{settings.BASE_URL}/sheets/{slug}"
@@ -56,12 +55,13 @@ async def generate_excel_token(
             "content_type": content_type,
             "doc_title": content.title,
             "doc_summary": content.summary,
+            "link_text": content.link_text,
             "filename": filename,
             "instructions": (
                 f"Drop '{filename}' in a file share or email attachment. "
-                f"The sheet contains a 'source' hyperlink cell that triggers the canary when clicked. "
-                f"Note: Excel does not reliably auto-fetch remote content on open, "
-                f"so the hyperlink cell is the primary, reliable trigger."
+                f"The sheet contains a '{content.link_text}' hyperlink cell that triggers "
+                f"the canary when clicked. Note: Excel does not reliably auto-fetch remote "
+                f"content on open, so the hyperlink cell is the primary, reliable trigger."
             ),
         },
     }
@@ -70,7 +70,8 @@ async def generate_excel_token(
 def _build_xlsx(content: TabularDecoyContent, click_url: str) -> bytes:
     """
     Build an .xlsx file with decoy tabular content using openpyxl.
-    Includes a styled header row, data rows, and a hyperlink "source" cell.
+    Includes a styled header row, data rows, and a hyperlink cell whose
+    visible text matches the sheet's content type (content.link_text).
     """
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
@@ -110,13 +111,11 @@ def _build_xlsx(content: TabularDecoyContent, click_url: str) -> bytes:
         )
         ws.column_dimensions[col_letter].width = min(max(max_len + 2, 10), 40)
 
-    # "Source" hyperlink row — the reliable trigger mechanism
-    source_row = header_row + len(content.rows) + 2
-    source_cell = ws.cell(row=source_row, column=1, value="Source / last updated reference")
-    source_cell.font = Font(size=8, color="999999", italic=True)
-    link_cell = ws.cell(row=source_row + 1, column=1, value=click_url)
+    # Hyperlink cell, styled per content type — the reliable trigger mechanism
+    link_row = header_row + len(content.rows) + 2
+    link_cell = ws.cell(row=link_row, column=1, value=content.link_text)
     link_cell.hyperlink = click_url
-    link_cell.font = Font(size=8, color="999999", underline="single")
+    link_cell.font = Font(size=10, color="2563EB", underline="single")
 
     buf = io.BytesIO()
     wb.save(buf)
@@ -124,6 +123,9 @@ def _build_xlsx(content: TabularDecoyContent, click_url: str) -> bytes:
 
 
 def _fallback_content(content_type: str) -> TabularDecoyContent:
+    from backend.intelligence.llm_engine import TabularDecoyContent, TABULAR_TEMPLATES
+
+    template = TABULAR_TEMPLATES.get(content_type, TABULAR_TEMPLATES["financial"])
     return TabularDecoyContent(
         title=f"Confidential {content_type.title()} Data — Internal Use Only",
         sheet_name="Data",
@@ -134,4 +136,5 @@ def _fallback_content(content_type: str) -> TabularDecoyContent:
         ],
         summary=f"Internal {content_type} spreadsheet",
         keywords=[content_type, "confidential", "internal"],
+        link_text=template["link_hints"][0],
     )
