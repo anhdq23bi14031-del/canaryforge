@@ -129,9 +129,16 @@ def score_trigger(
         breakdown["has_referer"] = 5
         total += 5
 
-    # --- Time-of-day (off-hours = higher risk) ---
+  # --- Time-of-day (off-hours = higher risk) ---
     from datetime import datetime, timezone
-    hour = datetime.now(timezone.utc).hour
+    from zoneinfo import ZoneInfo
+
+    try:
+        local_tz = ZoneInfo(settings.SCORING_TIMEZONE)
+    except Exception:
+        local_tz = timezone.utc  # fallback if the configured name is invalid
+
+    hour = datetime.now(timezone.utc).astimezone(local_tz).hour
     if hour < 6 or hour > 22:
         breakdown["off_hours"] = 10
         total += 10
