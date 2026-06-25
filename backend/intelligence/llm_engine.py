@@ -170,6 +170,25 @@ TABULAR_TEMPLATES = {
         "filename_hints": ["access_tracker", "service_accounts_export", "system_inventory"],
         "link_hints": ["Open in password manager", "Verify access status"],
     },
+    "education": {
+        "prompt": (
+            "Write a realistic internal academic document — an exam, problem set, "
+            "or graded assignment from a school or university course (e.g. chemistry, "
+            "biology, math, physics). Give it a plausible course code, instructor name, "
+            "term, and instructions header ('Show all work', 'No calculators', etc). "
+            "Include several real-style questions with point values, and make it look "
+            "like an actual document a teacher exported or a student saved — slightly "
+            "inconsistent spacing, a handwritten-style note in a margin reference, or a "
+            "'last updated' timestamp. Do not include an answer key unless explicitly "
+            "asked; treat this as a working/blank exam document."
+        ),
+        "filename_hints": ["chem_exam_{year}", "midterm_draft", "problem_set_{q}", "final_exam_key"],
+        "link_hints": [
+            "View full exam document",
+            "Open grading rubric",
+            "View answer key",
+        ],
+    },
 }
 
 
