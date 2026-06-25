@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     ALERT_SCORE_THRESHOLD: int = 40  # Min score to fire an alert
     FALSE_POSITIVE_SCORE: int = 10   # Max score before considered FP
 
+    # Scoring — timezone for "off-hours" detection (IANA name covers all of
+    # Vietnam incl. Hanoi — UTC+7, no DST; IANA only has "Asia/Ho_Chi_Minh")
+    SCORING_TIMEZONE: str = "Asia/Ho_Chi_Minh" 
+    
     # IPs/CIDR ranges that should NEVER trigger an alert (your own office,
     # security team, monitoring tools, etc). Comma-separated in .env.
     ALLOWLISTED_IPS: List[str] = []
