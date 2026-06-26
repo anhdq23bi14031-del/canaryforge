@@ -109,7 +109,7 @@ async def _handle_trigger(
         geo_country=geo.get("country_code"),
         token_type=token_type,
     )
-
+    print(f"[CanaryForge] token_id={token_id} type={token_type} score={score.total} rec={score.recommendation} breakdown={score.breakdown}")
     # --- Persist trigger ---
     trigger = Trigger(
         token_id=token_id,
