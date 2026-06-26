@@ -115,7 +115,7 @@ def score_trigger(
         breakdown["high_risk_country"] = 20
         total += 20
 
-    # --- Token type multiplier ---
+   # --- Token type multiplier ---
     # AWS credential use is the highest signal — very unlikely to be accidental
     if token_type == "aws":
         breakdown["aws_token_multiplier"] = 30
@@ -123,7 +123,9 @@ def score_trigger(
     elif token_type in ("doc", "pdf", "excel"):
         breakdown["document_open"] = 10
         total += 10
-
+    elif token_type == "url":
+        breakdown["url_visit"] = 10
+        total += 10
     # --- Referer analysis ---
     if referer:
         breakdown["has_referer"] = 5
