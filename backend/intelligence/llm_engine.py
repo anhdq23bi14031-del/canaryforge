@@ -270,7 +270,14 @@ Respond ONLY with a JSON object in this exact shape:
         raw = re.sub(r"^```json\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
 
-        data = json.loads(raw)
+        json_match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if json_match:
+            raw = json_match.group(0)
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            raise ValueError(f"LLM returned invalid JSON: {raw[:200]}")
 
         return DecoyContent(
             title=data["title"],
@@ -340,7 +347,14 @@ Every row array must have the same number of elements as the headers array."""
         raw = re.sub(r"^```json\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
 
-        data = json.loads(raw)
+        json_match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if json_match:
+            raw = json_match.group(0)
+
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            raise ValueError(f"LLM returned invalid JSON: {raw[:200]}")
 
         return TabularDecoyContent(
             title=data["title"],
